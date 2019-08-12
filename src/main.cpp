@@ -30,6 +30,11 @@ int main(int argc, char** argv) {
 	constexpr std::size_t h = 5;
 	constexpr std::size_t color_space_size = color_dim * color_dim * color_dim;
 
+	float kernel_table[h * h + 1];
+	for(std::size_t i = 0; i <= h * h; i++) {
+		kernel_table[i] = kernel(std::sqrt(static_cast<float>(i)), static_cast<float>(h));
+	}
+
 	std::unique_ptr<float[]> color_space(new float [color_space_size]);
 	for(std::size_t i = 0; i < color_space_size; i++) {
 		color_space.get()[i] = 0.0f;
@@ -56,7 +61,7 @@ int main(int argc, char** argv) {
 							const auto r2 = dr * dr + dg * dg + db * db;
 							if(r2 <= h * h) {
 #pragma omp atomic
-								color_space.get()[r * color_dim * color_dim + g * color_dim + b] += kernel(std::sqrt(static_cast<float>(r2)), static_cast<float>(h));
+								color_space.get()[r * color_dim * color_dim + g * color_dim + b] += kernel_table[r2];
 							}
 						}
 					}
@@ -67,7 +72,7 @@ int main(int argc, char** argv) {
 
 	std::vector<std::pair<std::size_t, float>> color_candidate;
 	for(std::size_t i = 0; i < color_space_size; i++) {
-		if(color_space.get()[i] > kernel(0.0f, static_cast<float>(h) * 5)) {
+		if(color_space.get()[i] > kernel_table[h * h]) {
 			color_candidate.push_back(std::make_pair(i, color_space.get()[i]));
 		}
 	}
