@@ -36,6 +36,7 @@ int main(int argc, char** argv) {
 	}
 
 	//clustering
+#pragma omp parallel for
 	for(std::size_t x = 0; x < image.cols; x++) {
 		for(std::size_t y = 0; y < image.rows; y++) {
 			const auto color = image.at<cv::Vec3b>(y, x);
@@ -54,6 +55,7 @@ int main(int argc, char** argv) {
 							const auto db = b - B;
 							const auto r2 = dr * dr + dg * dg + db * db;
 							if(r2 <= h * h) {
+#pragma omp atomic
 								color_space.get()[r * color_dim * color_dim + g * color_dim + b] += kernel(std::sqrt(static_cast<float>(r2)), static_cast<float>(h));
 							}
 						}
