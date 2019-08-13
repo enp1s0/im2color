@@ -12,7 +12,7 @@ float kernel(const float r, const float h) {
 }
 
 constexpr std::size_t num_top_colors = 5;
-constexpr std::size_t top_colors_min_distance = 80;
+constexpr std::size_t top_colors_min_distance = 50;
 
 int main(int argc, char** argv) {
 	if(argc <= 1) {
@@ -72,7 +72,7 @@ int main(int argc, char** argv) {
 
 	std::vector<std::pair<std::size_t, float>> color_candidate;
 	for(std::size_t i = 0; i < color_space_size; i++) {
-		if(color_space.get()[i] > kernel_table[h * h]) {
+		if(color_space.get()[i] / (image.cols * image.rows) > kernel_table[0] * 0.00005f) {
 			color_candidate.push_back(std::make_pair(i, color_space.get()[i]));
 		}
 	}
