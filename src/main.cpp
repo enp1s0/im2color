@@ -49,7 +49,7 @@ int main(int argc, char** argv) {
 	}
 
 	//clustering
-#pragma omp parallel for
+#pragma omp parallel for collapse(2)
 	for(std::size_t x = 0; x < width; x++) {
 		for(std::size_t y = 0; y < height; y++) {
 			const auto index = (x * height + y) * 4;
