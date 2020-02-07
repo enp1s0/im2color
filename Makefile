@@ -1,5 +1,5 @@
 CXX=g++
-CXXFLAGS=-std=c++14 -lopencv_core -lopencv_imgcodecs -lopencv_highgui -I/usr/local/opencv-4.0/include/opencv4/
+CXXFLAGS=-std=c++14 $(shell pkg-config --libs --cflags opencv)
 OMPFLAGS=-fopenmp
 NVCC=nvcc
 NVCCFLAGS=$(CXXFLAGS) --compiler-bindir=$(CXX) -Xcompiler=$(OMPFLAGS) -gencode arch=compute_60,code=sm_60
