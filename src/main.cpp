@@ -122,6 +122,6 @@ int main(int argc, char** argv) {
 		const int g = (color.first / color_dim) % color_dim;
 		const int b = color.first % color_dim;
 
-		std::printf("[%5e] : (%3d, %3d, %3d) #%02x%02x%02x\n", color.second, r, g, b, r, g, b);
+		std::printf("<span style=\"color:#%02x%02x%02x\">[%5e] : (%3d, %3d, %3d) #%02x%02x%02x</span><br>\n", r, g, b, color.second, r, g, b, r, g, b);
 	}
 }
