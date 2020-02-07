@@ -4,26 +4,34 @@
 #include <utility>
 #include <algorithm>
 #include <vector>
-#include <opencv2/core/core.hpp>
-#include <opencv2/highgui/highgui.hpp>
+#include <lodepng.h>
 
 float kernel(const float r, const float h) {
 	return std::exp(-r*r) - std::exp(-h*h);
 }
 
 constexpr std::size_t num_top_colors = 5;
-constexpr std::size_t top_colors_min_distance = 50;
+constexpr std::size_t default_top_colors_min_distance = 30;
 
 int main(int argc, char** argv) {
 	if(argc <= 1) {
 		return 1;
 	}
 	std::string input_filename = argv[1];
-	cv::Mat image = cv::imread(input_filename);
+
+	std::size_t top_colors_min_distance = default_top_colors_min_distance;
+	if(argc >= 3) {
+		top_colors_min_distance = std::stoul(argv[2]);
+	}
+
+	unsigned width, height;
+	std::vector<unsigned char> image;
+
+	const auto error = lodepng::decode(image, width, height, input_filename);
 
 	std::printf("# Image info\n"
 				"- Size : %u, %u\n"
-				, image.cols, image.rows
+				, width, height
 				);
 
 	constexpr std::size_t color_dim = 256;
@@ -42,12 +50,12 @@ int main(int argc, char** argv) {
 
 	//clustering
 #pragma omp parallel for
-	for(std::size_t x = 0; x < image.cols; x++) {
-		for(std::size_t y = 0; y < image.rows; y++) {
-			const auto color = image.at<cv::Vec3b>(y, x);
-			int B = color[0];
-			int G = color[1];
-			int R = color[2];
+	for(std::size_t x = 0; x < width; x++) {
+		for(std::size_t y = 0; y < height; y++) {
+			const auto index = (x * height + y) * 4;
+			const auto R = static_cast<unsigned>(image[index + 0]);
+			const auto G = static_cast<unsigned>(image[index + 1]);
+			const auto B = static_cast<unsigned>(image[index + 2]);
 
 			for(int r = R - h; r <= R + h; r++) {
 				for(int g = G - h; g <= G + h; g++) {
@@ -72,7 +80,7 @@ int main(int argc, char** argv) {
 
 	std::vector<std::pair<std::size_t, float>> color_candidate;
 	for(std::size_t i = 0; i < color_space_size; i++) {
-		if(color_space.get()[i] / (image.cols * image.rows) > kernel_table[0] * 0.00005f) {
+		if(color_space.get()[i] / (width * height) > kernel_table[0] * 0.00005f) {
 			color_candidate.push_back(std::make_pair(i, color_space.get()[i]));
 		}
 	}
@@ -108,7 +116,7 @@ int main(int argc, char** argv) {
 		}
 	}
 
-	std::printf("# Top colors (%lu)\n", top_colors.size());
+	std::printf("# Sorted colors (%lu)\n", top_colors.size());
 	for(const auto &color : top_colors) {
 		const int r = color.first / (color_dim * color_dim);
 		const int g = (color.first / color_dim) % color_dim;
