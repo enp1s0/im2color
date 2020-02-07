@@ -22,7 +22,7 @@ int main(int argc, char** argv) {
 	cv::Mat image = cv::imread(input_filename);
 
 	std::printf("# Image info\n"
-				"- Size : %lu, %lu\n"
+				"- Size : %u, %u\n"
 				, image.cols, image.rows
 				);
 
